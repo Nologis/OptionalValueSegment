@@ -1,6 +1,6 @@
 //
 //  AppDelegate.swift
-//  DisabledSwitch
+//  DisabledSegment
 //
 //  Created by vgutierrezNologis on 30/8/18.
 //  Copyright © 2018 vgutierrezNologis. All rights reserved.
