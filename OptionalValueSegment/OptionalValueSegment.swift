@@ -56,7 +56,7 @@ class OptionalValueSegment: UIView {
                     optionButton.setTitleColor(index == selectedOptionIndex
                         ? appearance.selectedTextColor
                         : appearance.defaultTextColor,
-                        for: .normal
+                                               for: .normal
                     )
                     optionButton.backgroundColor = index == selectedOptionIndex
                         ? appearance.selectedColor
@@ -77,25 +77,25 @@ class OptionalValueSegment: UIView {
     init(frame: CGRect,
          options: [(String, Any)],
          appearance: OptionalValueSegmentAppearance?
-        ) {
+    ) {
         self.options = options
         self.appearance = appearance ?? OptionalValueSegmentAppearance()
         super.init(frame: frame)
-        buildViews()
     }
 
     override init(frame: CGRect) {
         super.init(frame: frame)
-        buildViews()
     }
 
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
-        buildViews()
     }
 
     // MARK: Views creation
     func buildViews() {
+        optionsButtons.forEach { (button) in
+            button.removeFromSuperview()
+        }
         clipsToBounds = true
         let optionWidth = (bounds.width - (CGFloat(options.count)+2 * appearance.borderWidth)) / CGFloat(options.count)
         let optionHeight = bounds.height - 2 * appearance.borderWidth
@@ -118,6 +118,87 @@ class OptionalValueSegment: UIView {
             optionButton.addTarget(self, action: #selector(optionTouch(_:)), for: .touchUpInside)
             addSubview(optionButton)
             optionsButtons.append(optionButton)
+
+            optionButton.translatesAutoresizingMaskIntoConstraints = false
+
+            var constraints:[NSLayoutConstraint] = []
+
+            let topMarginConstraint = NSLayoutConstraint(
+                item: optionButton,
+                attribute: .top,
+                relatedBy: .equal,
+                toItem: self,
+                attribute: .top,
+                multiplier: 1,
+                constant: appearance.borderWidth
+            )
+            topMarginConstraint.isActive = true
+            constraints.append(topMarginConstraint)
+
+            let bottomMarginConstraint = NSLayoutConstraint(
+                item: self,
+                attribute: .bottom,
+                relatedBy: .equal,
+                toItem: optionButton,
+                attribute: .bottom,
+                multiplier: 1,
+                constant: appearance.borderWidth
+            )
+            bottomMarginConstraint.isActive = true
+            constraints.append(bottomMarginConstraint)
+
+            if index == 0 {
+                let leadingConstraint = NSLayoutConstraint(
+                    item: optionButton,
+                    attribute: .leading,
+                    relatedBy: .equal,
+                    toItem: self,
+                    attribute: .leading,
+                    multiplier: 1,
+                    constant: appearance.borderWidth
+                )
+                leadingConstraint.isActive = true
+                constraints.append(leadingConstraint)
+            } else if index == options.count - 1 {
+                let trailingConstraint = NSLayoutConstraint(
+                    item: optionButton,
+                    attribute: .trailing,
+                    relatedBy: .equal,
+                    toItem: self,
+                    attribute: .trailing,
+                    multiplier: 1,
+                    constant: appearance.borderWidth
+                )
+                trailingConstraint.isActive = true
+                constraints.append(trailingConstraint)
+            }
+            if index > 0 {
+                let previousButton = optionsButtons[index-1]
+                let leadingConstraint = NSLayoutConstraint(
+                    item: optionButton,
+                    attribute: .leading,
+                    relatedBy: .equal,
+                    toItem: previousButton,
+                    attribute: .trailing,
+                    multiplier: 1,
+                    constant: appearance.borderWidth
+                )
+                leadingConstraint.isActive = true
+                constraints.append(leadingConstraint)
+
+                let equalWidthConstraint = NSLayoutConstraint(
+                    item: optionButton,
+                    attribute: .width,
+                    relatedBy: .equal,
+                    toItem: previousButton,
+                    attribute: .width,
+                    multiplier: 1,
+                    constant: 0
+                )
+                equalWidthConstraint.isActive = true
+                constraints.append(equalWidthConstraint)
+            }
+            addConstraints(constraints)
         }
         applyAppearance()
     }
@@ -126,13 +207,15 @@ class OptionalValueSegment: UIView {
         layer.borderColor = appearance.defaultColor.cgColor
         layer.cornerRadius = appearance.cornerRadius
         backgroundColor = appearance.defaultColor
-        for index in 0...options.count-1 {
-            let optionButton = optionsButtons[index]
-            optionButton.titleLabel?.font = appearance.font
-            optionButton.setTitleColor(appearance.defaultColor, for: .normal)
-            optionButton.backgroundColor = appearance.backgroundColor
+        if optionsButtons.count > 0 {
+            for index in 0...options.count-1 {
+                let optionButton = optionsButtons[index]
+                optionButton.titleLabel?.font = appearance.font
+                optionButton.setTitleColor(appearance.defaultColor, for: .normal)
+                optionButton.backgroundColor = appearance.backgroundColor
+            }
+            self.setNeedsDisplay()
         }
-        self.setNeedsDisplay()
     }
     func reset() {
         selectedOptionIndex = nil
