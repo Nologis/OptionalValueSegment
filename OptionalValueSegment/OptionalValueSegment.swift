@@ -8,6 +8,10 @@
 
 import UIKit
 
+protocol OptionalValueSegmentProtocol: AnyObject {
+    func optionalValueSelected(option: (String, Any)?)
+}
+
 struct OptionalValueSegmentAppearance {
     /// Colors
     var selectedColor = UIColor.black
@@ -37,6 +41,7 @@ class OptionalValueSegment: UIView {
             buildViews()
         }
     }
+    weak var delegate: OptionalValueSegmentProtocol?
     private var optionsButtons = [UIButton]()
     private var selectedOptionIndex: Int? = nil {
         didSet {
@@ -116,6 +121,8 @@ class OptionalValueSegment: UIView {
                 for: .normal
             )
             optionButton.addTarget(self, action: #selector(optionTouch(_:)), for: .touchUpInside)
+            optionButton.isAccessibilityElement = true
+            optionButton.accessibilityIdentifier = "OptionalValueSegment.\(text)"
             addSubview(optionButton)
             optionsButtons.append(optionButton)
 
@@ -211,7 +218,7 @@ class OptionalValueSegment: UIView {
             for index in 0...options.count-1 {
                 let optionButton = optionsButtons[index]
                 optionButton.titleLabel?.font = appearance.font
-                optionButton.setTitleColor(appearance.defaultColor, for: .normal)
+                optionButton.setTitleColor(appearance.defaultTextColor, for: .normal)
                 optionButton.backgroundColor = appearance.backgroundColor
             }
             self.setNeedsDisplay()
@@ -223,5 +230,6 @@ class OptionalValueSegment: UIView {
     // MARK: IBActions
     @IBAction func optionTouch(_ optionButton: UIButton) {
         selectedOptionIndex = optionButton.tag
+        delegate?.optionalValueSelected(option: (selectedOptionIndex != nil) ? options[selectedOptionIndex!] : nil)
     }
 }
